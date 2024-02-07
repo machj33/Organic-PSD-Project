@@ -8,4 +8,6 @@ analyze and display the data obtained from organic position sensitive detectors 
 This repository may also be updated to include code to train artificial neural networks trained on obtained 
 data to improve the position sensing accuracy of the aforementioned PSDs.
 
+Necessary libraries include -- PyVisa/PyMeasure, TensorFlow, Matplotlib, numpy, etc. 
+
 
