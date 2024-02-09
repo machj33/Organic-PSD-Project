@@ -1,0 +1,44 @@
+{
+    "SMU1": {
+        "voltage_name" : "V1",
+        "current_name" : "I1",
+        "channel_function" : "VAR1",
+        "channel_mode" : "V",
+        "series_resistance" : "0OHM"
+    },
+
+    "SMU2": {
+        "voltage_name" : "V2",
+        "current_name" : "I2",
+        "channel_function" : "CONS",
+        "channel_mode" : "V",
+        "constant_value" : 0,
+        "compliance" : 0.1
+    },
+    
+    "SMU3": {
+        "voltage_name" : "V3",
+        "current_name" : "I3",
+        "channel_function" : "CONS",
+        "channel_mode" : "V",
+        "constant_value" : 0,
+        "compliance" : 0.1
+    },
+
+    "SMU4": {
+        "voltage_name" : "V4",
+        "current_name" : "I4",
+        "channel_function" : "CONS",
+        "channel_mode" : "V",
+        "constant_value" : 0,
+        "compliance" : 0.1
+    },
+
+    "VAR1": {
+        "start" : 0,
+        "stop" : 0,
+        "step" : 0.1,
+        "spacing" : "LINEAR",
+        "compliance" : 0.1
+    }
+}
