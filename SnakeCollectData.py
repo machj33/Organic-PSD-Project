@@ -6,28 +6,10 @@ from pymeasure.instruments.agilent import Agilent4156
 from pymeasure.instruments import list_resources
 import numpy as np
 
-print(serial.__version__)
-print(np.__version__)
-
 BAUD_RATE = 115200
 
-# Discrete measurement points
-xPoints = 6
-yPoints = 6
-
-# Length of usable area in mm
-xLength = 40
-yLength = 40
-
-# Distance between each measurement point
-xDist = xLength / (xPoints - 1)
-yDist = yLength / (yPoints - 1)
-
-# Time between movement and reading in ms
-settleTime = 1
-
-# Speed of movements
-speed = 250
+# Change to the port used in Candle
+GRBL_port_path = 'COM3'
 
 # 4155-C connection
 smu = Agilent4156("GPIB0::2::INSTR", read_termination = '\n', write_termination = '\n',
@@ -41,6 +23,21 @@ smu.save(['I1', 'I2', 'I3', 'I4'])
 # NPL Cycles (2 to 100) (.0333 to 1.666 seconds)
 npl = 5
 smu.write(f":PAGE:MEAS:MSET:ITIM:LONG {npl}")
+
+# Discrete measurement points
+xPoints = 6
+yPoints = 6
+
+# Length of usable area in mm
+xLength = 40
+yLength = 40
+
+# Distance between each measurement point
+xDist = xLength / (xPoints - 1)
+yDist = yLength / (yPoints - 1)
+
+# Speed of movements
+speed = 500
 
 # Current Data
 numMeasurements = 4
@@ -82,7 +79,6 @@ def move(ser, x, z = 0):
     ser.write(command)
     wait_for_movement_completion(ser,line)
     grbl_out = ser.readline()
-    # Event().wait(settleTime)
 
 # Some sort of reading
 def read(ser):
@@ -179,7 +175,6 @@ def stream_gcode(GRBL_port_path,gcode_path):
         
         print('End of gcode')
 
-GRBL_port_path = 'COM3' # Change to the port used in Candle
 gcode_path = 'grbl_test.gcode'
 gcode_path_2 = 'gcode/snake.gcode'
 
