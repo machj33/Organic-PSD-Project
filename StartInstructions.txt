@@ -1,16 +1,41 @@
 This document outlines how to get started measuring data on a PSD.
 
-1. Installing Python
+1. Cloning the repository
+
+If you already use Git and/or know how to, feel free to use whichever method you prefer. I personally use Git bash.
+Install it from this link: https://git-scm.com/downloads. Once open, use "ls" to show the current directory, and 
+"cd (FOLDER_NAME)" to change to that folder. "cd .." goes up one folder, and you can also put the full path of the
+folder you want. Navigate to the folder you want to work in.
+
+On the GitHub page, click the green "Code" button and copy the HTTPS link. In bash, type "git clone (LINK)". You
+should now have all the files in this folder. 
+
+Other Git basics:
+git pull - Gets all the changes from the online repository. Only do this if you are okay with losing all work on
+your current machine. Otherwise, use a combination of git fetch and git merge.
+git add - Adds changed files to the "stage". Used in conjunction with git commit.
+git commit - "Saves" the list of files on the "stage". Use -m to add a message or name to the commit.
+git push origin main - Pushes the commit from your local repository to the online (origin) main branch (main).
+* Use add, commit, and push to save your changes to the online repository *
+
+2. Installing Python
 
 Go to https://www.python.org/downloads/release/python-3122/ and download the latest version of Python.
+Then, you need to add Python to your path. In the Windows search bar, type "path" and select the
+"Edit system environment variables". Press the "Environment variables" in the bottom right. Under your
+user variables, select "Path" and press the "Edit" button. This will bring up a table of lines, of which
+you need to add two "New" lines. Find your install location for Python (e.g. "C:\Users\Winnie\AppData\
+Local\Programs\Python\Python311") and copy it into one of the lines for "Path". For the second line,
+paste in the same location and add "\Scripts".
+
 Alternatively, if Python is already installed, use CMD to type "python --version". This code was run
 and tested using Python 3.11.1
 
-2. Install packages
+3. Install packages
 
 The data collection script uses PyMeasure, PyVisa, and NumPy, while the data viewing script uses MatPlotLib and Seaborn.
-Use "pip install ---" to install each of pymeasure, numpy, and matplotlib. PyVisa should install with PyMeasure, and
-Seaborn should install with MatPlotLib. You can use "pip list" to ensure each are installed.
+Use "pip install ---" to install each of pymeasure, matplotlib, and seaborn. PyVisa and Numpy should install with PyMeasure.
+You can use "pip list" to ensure each are installed.
 
 Package            Version
 ------------------ ----------
@@ -20,7 +45,7 @@ PyMeasure          0.13.1
 PyVISA             1.14.1
 seaborn            0.13.2
 
-3. Install Candle
+4. Install Candle
 
 Go to https://docs.sainsmart.com/article/7c20d7zaw3-how-to-install-candle-grblcontrol-for-windows and follow step 2 for
 Software "Installation". This is the only step that I followed to get Candle working with the G-Code motors. However, if
@@ -30,25 +55,30 @@ Once you have Candle open, try connecting the USB from the setup and jogging the
 Since we only have the X and Z motors, only the left/right and gray up/down arrows will actually move anything. In settings,
 note which port you are connected to (e.g. COMX).
 
-4. Install Keysight Connection Expert
+5. Install Keysight Connection Expert
 
 Go to https://www.keysight.com/us/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html and 
 install the Keysight Instrument Control Bundle. This is what I personally used to install the Keysight Connection Expert,
-but the bundle also includes BenchVue and other programs which should not be necessary. 
+but the bundle also includes BenchVue and other programs which should not be necessary. Open the .exe file, and download
+the IO Connections Suite. This will allow you to open "Keysight Connection Expert". This is different from the "Keysight
+Secure Instrument Communication Expert".
 
 This program will be used to ensure your connection to the Semiconductor Parameter Analyzer (Agilent 4155C). Plug the
 GPIB-USB cable into your computer and open the program. Under "My Instruments" > "GPIB-USB", there should be a green box
 with an instrument labeled "4155C, Hewlett-Packard". Note the label under this name, which should look like 
 "GPIB-::X::INSTR".
 
+Theoretically, it may be possible to skip this step if you assume that the instrument is listed as "GPIB0::2::INSTR", 
+which it has for two computers. Maybe if you are following this guide, skip this step and see if this is necessary.
 
-5. Edit information in the data collection file
+6. Edit information in the data collection file
 
 In the data collection file, currently named "SnakeCollectData.py", set the variable GRBL_port_path to the port from
 Candle. Then, in the smu variable declaration, change "Agilent4156('GPIB0::X::INSTR...') to the label from Keysight
-Connection Expert.
+Connection Expert. Additionally, you may need to change some of the file paths, such as for the configuration file
+"simple_read.json".
 
-6. Set up the testing apparatus
+7. Set up the testing apparatus
 
 Place your PSD sample into the sample holder. Ensure the brass pins have a good connection to the ITO glass. There
 should be four SMU cables from the SPA, each which split into red and black alligator clip heads. Attach the red 
@@ -59,8 +89,21 @@ Set up a laser, a lens to focus the laser, and an aperature in front of the devi
 to be as fine as possible on the photodetecting surface. The aperature will prevent reflected light from illuminating
 other parts of the PSD.
 
-7. Use Candle to align the device.
+8. Use Candle to align the device.
 
 With the laser on, use the controls in Candle to move the laser to the bottom left corner of the device. Close out 
 of the Candle program and turn off the lights. Start the data collection program. The data will be saved in a 
 numpy array that can be loaded into other files.
+
+9. Install DAQmx
+
+There is an error running the script as is, and that is that Python cannot find nicaiu.dll. This seems to be a library
+used in LabVIEW, so if you have previously installed LabVIEW, you should be good to skip this step. Otherwise, go to
+https://www.ni.com/en/support/downloads/drivers/download.ni-daq-mx.html#521556 and download the latest version of 
+DAQmx. You will need to reboot after you are finished.
+
+10. Collect sample data
+
+You should be able to run the data collection script at this point. Set xPoints and yPoints to low numbers like
+6 to quickly get data. Change these variables to change how much data you want to collect. You should be good
+to start making your own changes.

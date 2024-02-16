@@ -15,7 +15,7 @@ GRBL_port_path = 'COM3'
 smu = Agilent4156("GPIB0::2::INSTR", read_termination = '\n', write_termination = '\n',
                   timeout=None)
 smu.reset()
-smu.configure("Parameter Analyzer/simple_read.json")
+smu.configure("simple_read.json")
 smu.analyzer_mode = "SWEEP"
 smu.integration_time = "LONG"
 smu.save(['I1', 'I2', 'I3', 'I4'])
@@ -23,6 +23,9 @@ smu.save(['I1', 'I2', 'I3', 'I4'])
 # NPL Cycles (2 to 100) (.0333 to 1.666 seconds)
 npl = 5
 smu.write(f":PAGE:MEAS:MSET:ITIM:LONG {npl}")
+
+# Starting at "Top" or "Bottom"
+startAt = "Top"
 
 # Discrete measurement points
 xPoints = 41
@@ -82,7 +85,7 @@ def move(ser, x, z = 0):
 
 # Some sort of reading
 def read(ser):
-    status = smu.measure()
+    smu.measure()
     return smu.get_data()
 
 # Not sure why this does exactly what it does
@@ -124,34 +127,38 @@ def snake_pass(GRBL_port_path):
         # center(ser)
         
         # Right is '-1' and left is '1'
-        direction = -1
+        xDirection = -1
+        yDirection = -1
 
-        # From the top left of the PSD
+        # From the left corner of the PSD
         for j in range(yPoints):
             for i in range(xPoints):
+                if startAt == "Top":
+                    j = yPoints - 1 - j
+                    yDirection = 1
                 start = time.time()
-                status = smu.measure()
+                smu.measure()
                 start_of_data = time.time()
                 data = smu.get_data()
                 end_of_data = time.time()
-                currentMeasurements[0, yPoints - 1 - j, i] = data['I1']
-                currentMeasurements[1, yPoints - 1 - j, i] = data['I2']
-                currentMeasurements[2, yPoints - 1 - j, i] = data['I3']
-                currentMeasurements[3, yPoints - 1 - j, i] = data['I4']
+                currentMeasurements[0, j, i] = data['I1']
+                currentMeasurements[1, j, i] = data['I2']
+                currentMeasurements[2, j, i] = data['I3']
+                currentMeasurements[3, j, i] = data['I4']
                 end = time.time()
                 print('Total Time:')
                 print(end - start)
                 print('Get Data Time:')
                 print(end_of_data - start_of_data)
-                move(ser, direction * xDist)
+                move(ser, xDirection * xDist)
             if j % 2 == 1:
                 currentMeasurements[0, j, :] = np.flip(currentMeasurements[0, j, :])
                 currentMeasurements[1, j, :] = np.flip(currentMeasurements[1, j, :])
                 currentMeasurements[2, j, :] = np.flip(currentMeasurements[2, j, :])
                 currentMeasurements[3, j, :] = np.flip(currentMeasurements[3, j, :])
-            direction *= -1
-            move(ser, direction * xDist, 1 * yDist)
-        move(ser, xLength/2 + direction * xLength/2, -1 * (yLength + yDist))
+            xDirection *= -1
+            move(ser, xDirection * xDist, yDirection * yDist)
+        move(ser, xLength/2 + xDirection * xLength/2, -1 * yDirection * (yLength + yDist))
         move(ser, 5, -5)
 
 def stream_gcode(GRBL_port_path,gcode_path):
