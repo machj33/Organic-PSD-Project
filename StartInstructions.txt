@@ -44,4 +44,23 @@ with an instrument labeled "4155C, Hewlett-Packard". Note the label under this n
 
 5. Edit information in the data collection file
 
-In the data collection file, currently named "SnakeCollectData.py", set the variable GRBL_port_path to the 
+In the data collection file, currently named "SnakeCollectData.py", set the variable GRBL_port_path to the port from
+Candle. Then, in the smu variable declaration, change "Agilent4156('GPIB0::X::INSTR...') to the label from Keysight
+Connection Expert.
+
+6. Set up the testing apparatus
+
+Place your PSD sample into the sample holder. Ensure the brass pins have a good connection to the ITO glass. There
+should be four SMU cables from the SPA, each which split into red and black alligator clip heads. Attach the red 
+alligator clips to the wires from the contacts. Attach all black alligator clips to the ground wire on the back
+of the device and the ground from the VSU. 
+
+Set up a laser, a lens to focus the laser, and an aperature in front of the device. The lens should focus the laser
+to be as fine as possible on the photodetecting surface. The aperature will prevent reflected light from illuminating
+other parts of the PSD.
+
+7. Use Candle to align the device.
+
+With the laser on, use the controls in Candle to move the laser to the bottom left corner of the device. Close out 
+of the Candle program and turn off the lights. Start the data collection program. The data will be saved in a 
+numpy array that can be loaded into other files.

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-data = np.load("test_data_axes_swapped.npy")
+data = np.load("test_data.npy")
 
 x, y, z = data.shape
 
