@@ -25,8 +25,8 @@ npl = 5
 smu.write(f":PAGE:MEAS:MSET:ITIM:LONG {npl}")
 
 # Discrete measurement points
-xPoints = 6
-yPoints = 6
+xPoints = 41
+yPoints = 41
 
 # Length of usable area in mm
 xLength = 40
@@ -126,7 +126,7 @@ def snake_pass(GRBL_port_path):
         # Right is '-1' and left is '1'
         direction = -1
 
-        # From the bottom left of the PSD
+        # From the top left of the PSD
         for j in range(yPoints):
             for i in range(xPoints):
                 start = time.time()
@@ -134,10 +134,10 @@ def snake_pass(GRBL_port_path):
                 start_of_data = time.time()
                 data = smu.get_data()
                 end_of_data = time.time()
-                currentMeasurements[0, j, i] = data['I1']
-                currentMeasurements[1, j, i] = data['I2']
-                currentMeasurements[2, j, i] = data['I3']
-                currentMeasurements[3, j, i] = data['I4']
+                currentMeasurements[0, yPoints - 1 - j, i] = data['I1']
+                currentMeasurements[1, yPoints - 1 - j, i] = data['I2']
+                currentMeasurements[2, yPoints - 1 - j, i] = data['I3']
+                currentMeasurements[3, yPoints - 1 - j, i] = data['I4']
                 end = time.time()
                 print('Total Time:')
                 print(end - start)
@@ -150,8 +150,9 @@ def snake_pass(GRBL_port_path):
                 currentMeasurements[2, j, :] = np.flip(currentMeasurements[2, j, :])
                 currentMeasurements[3, j, :] = np.flip(currentMeasurements[3, j, :])
             direction *= -1
-            move(ser, direction * xDist, -1 * yDist)
-        move(ser, xLength/2 + direction * xLength/2, yLength + yDist)
+            move(ser, direction * xDist, 1 * yDist)
+        move(ser, xLength/2 + direction * xLength/2, -1 * (yLength + yDist))
+        move(ser, 5, -5)
 
 def stream_gcode(GRBL_port_path,gcode_path):
     # with contect opens file/connection and closes it if function(with) scope is left
