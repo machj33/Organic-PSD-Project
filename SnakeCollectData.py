@@ -132,10 +132,10 @@ def snake_pass(GRBL_port_path):
 
         # From the left corner of the PSD
         for j in range(yPoints):
+            if startAt == "Top":
+                j = yPoints - 1 - j
+                yDirection = 1
             for i in range(xPoints):
-                if startAt == "Top":
-                    j = yPoints - 1 - j
-                    yDirection = 1
                 start = time.time()
                 smu.measure()
                 start_of_data = time.time()
@@ -158,7 +158,7 @@ def snake_pass(GRBL_port_path):
                 currentMeasurements[3, j, :] = np.flip(currentMeasurements[3, j, :])
             xDirection *= -1
             move(ser, xDirection * xDist, yDirection * yDist)
-        move(ser, (xLength + xDist)/2 + xDirection * (xLength + xDist)/2, -1 * yDirection * (yLength + yDist))
+        move(ser, xLength/2 + xDirection * xLength/2, -1 * yDirection * (yLength + yDist))
         move(ser, 5, -5)
 
 def stream_gcode(GRBL_port_path,gcode_path):
