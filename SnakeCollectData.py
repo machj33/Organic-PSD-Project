@@ -9,7 +9,7 @@ import numpy as np
 BAUD_RATE = 115200
 
 # Change to the port used in Candle
-GRBL_port_path = 'COM3'
+GRBL_port_path = 'COM4'
 
 # 4155-C connection
 smu = Agilent4156("GPIB0::2::INSTR", read_termination = '\n', write_termination = '\n',
@@ -128,6 +128,9 @@ def snake_pass(GRBL_port_path):
 
         smu.measure()
         darkCurrent = smu.get_data()
+
+        print("Turn on the laser. You have 20 seconds")
+        Event().wait(20)
         
         # Right is '-1' and left is '1'
         xDirection = -1
