@@ -125,6 +125,9 @@ def snake_pass(GRBL_port_path):
         ser.write(str.encode('G91')) # Relative movement mode
         set_speed(ser, speed)
         # center(ser)
+
+        smu.measure()
+        darkCurrent = smu.get_data()
         
         # Right is '-1' and left is '1'
         xDirection = -1
@@ -141,10 +144,10 @@ def snake_pass(GRBL_port_path):
                 start_of_data = time.time()
                 data = smu.get_data()
                 end_of_data = time.time()
-                currentMeasurements[0, j, i] = data['I1']
-                currentMeasurements[1, j, i] = data['I2']
-                currentMeasurements[2, j, i] = data['I3']
-                currentMeasurements[3, j, i] = data['I4']
+                currentMeasurements[0, j, i] = data['I1'] - darkCurrent['I1']
+                currentMeasurements[1, j, i] = data['I2'] - darkCurrent['I2']
+                currentMeasurements[2, j, i] = data['I3'] - darkCurrent['I3']
+                currentMeasurements[3, j, i] = data['I4'] - darkCurrent['I4']
                 end = time.time()
                 print('Total Time:')
                 print(end - start)
