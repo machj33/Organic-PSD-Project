@@ -18,22 +18,23 @@ smu.reset()
 smu.configure("simple_read.json")
 smu.analyzer_mode = "SWEEP"
 smu.integration_time = "LONG"
-smu.save(['I1', 'I2', 'I3', 'I4'])
+smu.save(['I1'])
+# smu.save(['I1', 'I2', 'I3', 'I4'])
 
 # NPL Cycles (2 to 100) (.0333 to 1.666 seconds)
-npl = 5
-smu.write(f":PAGE:MEAS:MSET:ITIM:LONG {npl}")
+npl = 7
+smu.write(f":PAGE:MEAS:MSET:ITIM:LONG {npl}")  
 
 # Starting at "Top" or "Bottom"
 startAt = "Top"
 
 # Discrete measurement points
-xPoints = 41
-yPoints = 41
+xPoints = 7
+yPoints = 7
 
 # Length of usable area in mm
-xLength = 40
-yLength = 40
+xLength = 36
+yLength = 36
 
 # Distance between each measurement point
 xDist = xLength / (xPoints - 1)
@@ -45,6 +46,7 @@ speed = 500
 # Current Data
 numMeasurements = 4
 currentMeasurements = np.zeros((numMeasurements, xPoints, yPoints))
+darkCurrent = []
 
 # Should be useless right now, may be utilized if gcode files are used in the future
 def remove_comment(string):
@@ -119,6 +121,7 @@ def wait_for_movement_completion(ser,cleaned_line):
     return
 
 def snake_pass(GRBL_port_path):
+    global darkCurrent
     with serial.Serial(GRBL_port_path, BAUD_RATE) as ser:
         send_wake_up(ser)
         ser.write(str.encode('G21')) # Metric system
@@ -147,10 +150,10 @@ def snake_pass(GRBL_port_path):
                 start_of_data = time.time()
                 data = smu.get_data()
                 end_of_data = time.time()
-                currentMeasurements[0, j, i] = data['I1'] - darkCurrent['I1']
-                currentMeasurements[1, j, i] = data['I2'] - darkCurrent['I2']
-                currentMeasurements[2, j, i] = data['I3'] - darkCurrent['I3']
-                currentMeasurements[3, j, i] = data['I4'] - darkCurrent['I4']
+                currentMeasurements[0, j, i] = data['I1']
+                # currentMeasurements[1, j, i] = data['I2']
+                # currentMeasurements[2, j, i] = data['I3']
+                # currentMeasurements[3, j, i] = data['I4']
                 end = time.time()
                 print('Total Time:')
                 print(end - start)
@@ -159,13 +162,13 @@ def snake_pass(GRBL_port_path):
                 move(ser, xDirection * xDist)
             if j % 2 == 1:
                 currentMeasurements[0, j, :] = np.flip(currentMeasurements[0, j, :])
-                currentMeasurements[1, j, :] = np.flip(currentMeasurements[1, j, :])
-                currentMeasurements[2, j, :] = np.flip(currentMeasurements[2, j, :])
-                currentMeasurements[3, j, :] = np.flip(currentMeasurements[3, j, :])
+                # currentMeasurements[1, j, :] = np.flip(currentMeasurements[1, j, :])
+                # currentMeasurements[2, j, :] = np.flip(currentMeasurements[2, j, :])
+                # currentMeasurements[3, j, :] = np.flip(currentMeasurements[3, j, :])
             xDirection *= -1
             move(ser, xDirection * xDist, yDirection * yDist)
         move(ser, xLength/2 + xDirection * xLength/2, -1 * yDirection * (yLength + yDist))
-        move(ser, 5, -5)
+        move(ser, 5)
 
 def stream_gcode(GRBL_port_path,gcode_path):
     # with contect opens file/connection and closes it if function(with) scope is left
@@ -187,7 +190,7 @@ def stream_gcode(GRBL_port_path,gcode_path):
 
                 
         
-        print('End of gcode')
+        print('End of gcode') 
 
 gcode_path = 'grbl_test.gcode'
 gcode_path_2 = 'gcode/snake.gcode'
@@ -196,4 +199,5 @@ print("USB Port: ", GRBL_port_path)
 snake_pass(GRBL_port_path)
 # stream_gcode(GRBL_port_path,gcode_path_2)
 np.save("test_data.npy", currentMeasurements)
+np.save("dark_current.npy", darkCurrent)
 print("Completed")
