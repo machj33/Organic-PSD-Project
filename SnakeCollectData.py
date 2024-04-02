@@ -8,8 +8,11 @@ import numpy as np
 
 BAUD_RATE = 115200
 
+# One contact per run or four contacts per run
+single = True
+
 # Change to the port used in Candle
-GRBL_port_path = 'COM4'
+GRBL_port_path = 'COM3'
 
 # 4155-C connection
 smu = Agilent4156("GPIB0::2::INSTR", read_termination = '\n', write_termination = '\n',
@@ -18,8 +21,10 @@ smu.reset()
 smu.configure("simple_read.json")
 smu.analyzer_mode = "SWEEP"
 smu.integration_time = "LONG"
-smu.save(['I1'])
-# smu.save(['I1', 'I2', 'I3', 'I4'])
+if single:
+    smu.save(['I1'])
+else:
+    smu.save(['I1', 'I2', 'I3', 'I4'])
 
 # NPL Cycles (2 to 100) (.0333 to 1.666 seconds)
 npl = 7
@@ -132,8 +137,7 @@ def snake_pass(GRBL_port_path):
         smu.measure()
         darkCurrent = smu.get_data()
 
-        print("Turn on the laser. You have 20 seconds")
-        Event().wait(20)
+        input("Turn on the laser. Press any key to continue")
         
         # Right is '-1' and left is '1'
         xDirection = -1
@@ -150,10 +154,10 @@ def snake_pass(GRBL_port_path):
                 start_of_data = time.time()
                 data = smu.get_data()
                 end_of_data = time.time()
-                currentMeasurements[0, j, i] = data['I1']
-                # currentMeasurements[1, j, i] = data['I2']
-                # currentMeasurements[2, j, i] = data['I3']
-                # currentMeasurements[3, j, i] = data['I4']
+                currentMeasurements[0, j, i] = data['I1'].iloc[0]
+                currentMeasurements[1, j, i] = data['I2'].iloc[0]
+                currentMeasurements[2, j, i] = data['I3'].iloc[0]
+                currentMeasurements[3, j, i] = data['I4'].iloc[0]
                 end = time.time()
                 print('Total Time:')
                 print(end - start)
@@ -161,14 +165,65 @@ def snake_pass(GRBL_port_path):
                 print(end_of_data - start_of_data)
                 move(ser, xDirection * xDist)
             if j % 2 == 1:
-                currentMeasurements[0, j, :] = np.flip(currentMeasurements[0, j, :])
-                # currentMeasurements[1, j, :] = np.flip(currentMeasurements[1, j, :])
-                # currentMeasurements[2, j, :] = np.flip(currentMeasurements[2, j, :])
-                # currentMeasurements[3, j, :] = np.flip(currentMeasurements[3, j, :])
+                currentMeasurements[0, j, :] = np.flip(currentMeasurements[0, j, :]).iloc[0]
+                currentMeasurements[1, j, :] = np.flip(currentMeasurements[1, j, :]).iloc[0]
+                currentMeasurements[2, j, :] = np.flip(currentMeasurements[2, j, :]).iloc[0]
+                currentMeasurements[3, j, :] = np.flip(currentMeasurements[3, j, :]).iloc[0]
             xDirection *= -1
             move(ser, xDirection * xDist, yDirection * yDist)
         move(ser, xLength/2 + xDirection * xLength/2, -1 * yDirection * (yLength + yDist))
         move(ser, 5)
+        input("Change the wiring. Press any key to continue")
+
+def snake_pass_single(GRBL_port_path):
+    global darkCurrent
+    with serial.Serial(GRBL_port_path, BAUD_RATE) as ser:
+        send_wake_up(ser)
+        ser.write(str.encode('G21')) # Metric system
+        ser.write(str.encode('G91')) # Relative movement mode
+        set_speed(ser, speed)
+        # center(ser)
+
+        smu.measure()
+        darkCurrent = smu.get_data()
+
+        print("Turn on the laser. You have 20 seconds")
+        Event().wait(20)
+        
+        # Right is '-1' and left is '1'
+        xDirection = -1
+        yDirection = -1
+
+        # Set up for the loop
+        move(ser, 5)
+
+        for k in range(numMeasurements):
+            # Put the laser back on the device
+            move(ser, -5)
+            # From the left corner of the PSD
+            for j in range(yPoints):
+                if startAt == "Top":
+                    j = yPoints - 1 - j
+                    yDirection = 1
+                for i in range(xPoints):
+                    start = time.time()
+                    smu.measure()
+                    start_of_data = time.time()
+                    data = smu.get_data()
+                    end_of_data = time.time()
+                    currentMeasurements[k, j, i] = data['I1'].iloc[0]
+                    end = time.time()
+                    print('Total Time:')
+                    print(end - start)
+                    print('Get Data Time:')
+                    print(end_of_data - start_of_data)
+                    move(ser, xDirection * xDist)
+                if j % 2 == 1:
+                    currentMeasurements[k, j, :] = np.flip(currentMeasurements[k, j, :])
+                xDirection *= -1
+                move(ser, xDirection * xDist, yDirection * yDist)
+            move(ser, xLength/2 + xDirection * xLength/2, -1 * yDirection * (yLength + yDist))
+            move(ser, 5)
 
 def stream_gcode(GRBL_port_path,gcode_path):
     # with contect opens file/connection and closes it if function(with) scope is left
@@ -196,7 +251,12 @@ gcode_path = 'grbl_test.gcode'
 gcode_path_2 = 'gcode/snake.gcode'
 
 print("USB Port: ", GRBL_port_path)
-snake_pass(GRBL_port_path)
+
+if single:
+    snake_pass(GRBL_port_path)
+else:
+    snake_pass_single(GRBL_port_path)
+
 # stream_gcode(GRBL_port_path,gcode_path_2)
 np.save("test_data.npy", currentMeasurements)
 np.save("dark_current.npy", darkCurrent)
