@@ -5,8 +5,8 @@ import seaborn as sns
 # data = np.load("Data/LD3_3_22_24.npy")
 # dark = np.load("Data/dark_current_LD3_3_22_24.npy")
 
-data = np.load("test_data.npy")
-dark = np.load("dark_current.npy")
+data = np.load("test_data_04112024_LD7.npy")
+dark = np.load("dark_current_04112024_LD7.npy")
 
 dark = dark[0,:]
 
@@ -63,5 +63,6 @@ plt.show()
 fig2, ax2 = plt.subplots(1, 1,)
 sns.heatmap(sum, ax=ax2, cmap='jet', cbar=True, cbar_kws={'pad':0.01, 'shrink':0.8, 'format':'{x:.0e}'},
                     square=True, vmin=min, vmax=max)
+ax2.invert_yaxis()
 
 plt.show()
