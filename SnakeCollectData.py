@@ -80,7 +80,7 @@ def set_speed(ser,mmpm):
 # "Center" to top left of the detector
 def center(ser):
     #Define later
-    temp = 1
+    pass
 
 def move(ser, x, z = 0):
     line = "G1 X" + str(x) + " Z" + str(z) + "\n"
@@ -269,4 +269,5 @@ else:
 # stream_gcode(GRBL_port_path,gcode_path_2)
 np.save("test_data_LD7.npy", currentMeasurements)
 np.save("dark_current_LD7.npy", darkCurrent)
+
 print("Completed")

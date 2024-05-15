@@ -1,4 +1,85 @@
-This document outlines how to get started measuring data on a PSD.
+Individual Scan Checklist:
+
+1. Turn on the  laser
+2. Turn on the current measurement device
+3. Turn on the ground source
+4. Determine the active area to measure
+5. Align the device
+6. Rename the data
+7. Collect data
+8. Check the data
+
+
+Here are more in depth instructions for each step. If you need to set up the scans for a new laptop or
+controller, there are more steps further below.
+
+
+1. Turn on the  laser
+
+Find the green LED laser and turn it on using the power source. The voltage should be set to 3 V. Let this laser
+reach thermal equilibrium by leaving it on for 15 minutes. While it is not in use, cover the light so it isn't
+sitting on one point of the device.
+
+2. Turn on the current measurement device
+
+Currently, the measurement device is now the Agilent 4155C, but there were ideas of switching to a Keithley
+measurement source to reduce the variance of leakage current. If you are using the 4155C and reading 4 currents
+at a time, connect each wire to one current port. If you are reading 1 current at a time, then connect the 3 
+remaining contacts to ground. If there are more than 4 contacts, then connect all remaining connections to
+ground as well.
+
+3. Turn on the ground source
+
+This current set up uses a Keithley source to better control the ground source. In other set ups, the 4155C
+was the ground source.
+
+4. Determine the active area to measure
+
+Figure out the area and scan size. A lot of the data currently collected uses a 34 x 34 scan over a 33 x 33
+area. I have run a "dense" scan of 67 x 67 points (0.5 mm steps, 2 per mm, plus 1 for the 0th measurement),
+which took about 4 hours instead of 1. In any case, it is probably important to maintain the same area for
+each scan used in analysis and training. Each data set is standardized, so the maximum current value read at
+the outside will be scanned. Most likely, a scan at the edge of the device will have a higher current reading
+than one 3 mm in.
+
+Change the variables in SnakeCollectData.py so that xPoints and yPoints is set to the number of scan spots
+(i.e. 34 or 67), and xLength and yLength to the useable area of the device (i.e. 33 mm). Sometimes, I do a 
+test scan that is only 6 x 6 points, as a sanity check. This would be across a 35 x 35 mm area to ensure that
+each step is exactly 5 mm. The minimum step size of the g-code motor is 0.1 mm, so ensure that the step
+size is a multiple of 0.1 to keep spacing consistent.
+
+5. Align the device
+
+Ensure that the bottom of the sample holder is flush with the g-code motor. Using the orange glasses and
+Candle.exe, align the laser to the top left corner of the device. I find the best way to do this is make sure
+the laser is half on the left edge, then align it so the laser is half on the top edge. Once the laser is in
+the corner, move the device up and to the left (moving the laser down and to the right, on the device) by 3.5
+mm, which was calculated from (40 - 33)/2. This removed the a border of 3.5 mm on each side of the device.
+
+6. Rename the data
+
+At the bottom of the program, there will be fields to change the name of the files saved, one for the current
+measurements and one for the dark current measurements. I would suggest using the name of the device, date, and
+configuration in the name.
+
+7. Collect data
+
+Turn off the lights and cover the laser again. Start the SnakeCollectData.py program to being data collection.
+The first step will be a dark current reading. The output will prompt you to hit "Turn on the laser", or just
+uncover the laser, and hit enter to being the actual scan. Once the scan starts, you can start a timer for about
+1 hour. Leave the room and return in an hour to check if the scan is finished. It will finish 5 mm to the right
+of the initial starting location, so the laser does not sit on the same spot of the device.
+
+8. Check the data
+
+Currently the data will be output as a .npy file that you renamed in step 6. Use the ViewData.py program to view
+the latest data. Change the file that is opened at the top of the file, and it should give you a quick 
+visualization of what your data looks like. If the scan looks good, you can copy and paste both saved files into
+the Data/ folder.
+
+
+If you are starting the project on a new laptop/controller, here are the start-up steps.
+
 
 1. Cloning the repository
 
@@ -97,13 +178,7 @@ numpy array that can be loaded into other files.
 
 9. Install DAQmx
 
-There is an error running the script as is, and that is that Python cannot find nicaiu.dll. This seems to be a library
+There is an error running the script as is, and it is that Python cannot find nicaiu.dll. This seems to be a library
 used in LabVIEW, so if you have previously installed LabVIEW, you should be good to skip this step. Otherwise, go to
 https://www.ni.com/en/support/downloads/drivers/download.ni-daq-mx.html#521556 and download the latest version of 
 DAQmx. You will need to reboot after you are finished.
-
-10. Collect sample data
-
-You should be able to run the data collection script at this point. Set xPoints and yPoints to low numbers like
-6 to quickly get data. Change these variables to change how much data you want to collect. You should be good
-to start making your own changes.
